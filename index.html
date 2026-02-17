@@ -421,8 +421,6 @@
         <svg viewBox="0 0 24 24" width="35" height="35" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
     </a>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
     // 1. CONFIGURACIÓN
     const supabaseUrl = "https://sujrgipyxtgwkntjqnse.supabase.co";
@@ -430,7 +428,7 @@
     const { createClient } = supabase;
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-    // 2. NAVEGACIÓN
+    // 2. NAVEGACIÓN (Se mantiene igual)
     function showTab(tabId, btn) {
         if (window.innerWidth > 768) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -442,59 +440,31 @@
         } else {
             const target = document.getElementById(tabId);
             const offset = 80;
-            const bodyRect = document.body.getBoundingClientRect().top;
-            const elementRect = target.getBoundingClientRect().top;
-            const elementPosition = elementRect - bodyRect;
-            const offsetPosition = elementPosition - offset;
-            window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+            window.scrollTo({ top: target.offsetTop - offset, behavior: 'smooth' });
         }
     }
 
-    // 3. VALIDACIONES
-    const inputFecha = document.getElementById("fecha");
-    const inputHora = document.getElementById("hora");
-    const statusMsg = document.getElementById("status-msg");
-
-    inputFecha.setAttribute("min", new Date().toISOString().split("T")[0]);
-
-    inputFecha.addEventListener("change", () => {
-        const seleccion = new Date(inputFecha.value);
-        const dia = seleccion.getUTCDay(); 
-        if (dia === 0) {
-            alert("🗓️ Los domingos el centro permanece cerrado. Por favor, elige otro día.");
-            inputFecha.value = "";
-        }
-    });
-
-    inputHora.addEventListener("change", () => {
-        const h = parseInt(inputHora.value.split(':')[0]);
-        if (h < 10 || h >= 20) {
-            statusMsg.innerText = "⏳ Horario comercial: 10:00 a 20:00.";
-            statusMsg.style.color = "#d68a9b";
-        } else {
-            statusMsg.innerText = "✨ Horario disponible.";
-            statusMsg.style.color = "#25d366";
-        }
-    });
-
-    // 4. ENVÍO DE DATOS (CORREGIDO PARA MÓVIL)
+    // 3. ENVÍO DE DATOS Y APERTURA DE APP
     document.getElementById("citaForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
+        const btnSubmit = e.target.querySelector('button');
+        const statusMsg = document.getElementById("status-msg");
+        
+        // Capturar valores
         const nom = document.getElementById("nombre").value;
         const fec = document.getElementById("fecha").value;
         const hor = document.getElementById("hora").value;
         const ser = document.getElementById("servicio").value;
         const not = document.getElementById("notas").value;
 
-        const h = parseInt(hor.split(':')[0]);
-        if (h < 10 || h >= 20) {
-            alert("❌ Lo sentimos, solo aceptamos citas entre las 10:00 y las 20:00.");
-            return; 
-        }
+        // Feedback visual
+        btnSubmit.innerText = "GUARDANDO CITA...";
+        btnSubmit.style.background = "#666";
+        btnSubmit.disabled = true;
 
         try {
-            // INSERTAR EN SUPABASE
+            // A. Guardar en Supabase
             const { error } = await supabaseClient
                 .from("citas")
                 .insert([{
@@ -508,18 +478,36 @@
 
             if (error) throw error;
 
-            // PREPARAR WHATSAPP
+            // B. Preparar el mensaje
             const finalMsg = `¡Hola Gloow! ✨\n*Nueva solicitud de cita*\n\n*Cliente:* ${nom}\n*Fecha:* ${fec}\n*Hora:* ${hor}\n*Servicio:* ${ser}\n*Notas:* ${not || 'Sin notas'}`;
-            const waUrl = `https://wa.me/34628302701?text=${encodeURIComponent(finalMsg)}`;
+            
+            // C. EL TRUCO PARA MÓVIL: Cambiamos el botón para que sea un enlace real de WhatsApp
+            // Usamos el protocolo 'whatsapp://' que fuerza la apertura de la APP directamente
+            const waProtocol = `whatsapp://send?phone=34628302701&text=${encodeURIComponent(finalMsg)}`;
+            const waFallback = `https://api.whatsapp.com/send?phone=34628302701&text=${encodeURIComponent(finalMsg)}`;
 
-            // NOTIFICAR Y REDIRIGIR (window.location.href funciona siempre en móvil)
-            alert("✅ ¡Cita registrada con éxito! Vamos a confirmar por WhatsApp...");
-            document.getElementById("citaForm").reset();
-            window.location.href = waUrl;
+            statusMsg.innerHTML = "✅ Cita guardada correctamente.";
+            statusMsg.style.color = "#25d366";
+
+            // Cambiamos el botón para que el usuario DE EL CLIC FINAL que el móvil exige
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "ABRIR WHATSAPP AHORA";
+            btnSubmit.style.background = "#25d366";
+            
+            // Al hacer clic ahora, se abrirá la App al 100% porque es una acción directa
+            btnSubmit.onclick = () => {
+                window.location.href = waProtocol;
+                // Si en 500ms no ha abierto, usamos el link normal por si acaso
+                setTimeout(() => { window.location.href = waFallback; }, 500);
+            };
+
+            // Intentar abrirlo automáticamente de todos modos
+            window.location.href = waProtocol;
 
         } catch (error) {
-            console.error("Error al guardar:", error);
-            alert("❌ Hubo un error al guardar: " + error.message);
+            alert("Error: " + error.message);
+            btnSubmit.innerText = "REINTENTAR";
+            btnSubmit.disabled = false;
         }
     });
 </script>
