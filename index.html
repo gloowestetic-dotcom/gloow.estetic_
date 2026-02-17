@@ -1,128 +1,551 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gloow Estetic | Nail Artist</title>
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gloow Estetic | Luxury experience</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fdfaf8;   
+            --primary: #f2a6b7;   
+            --primary-dark: #d68a9b;
+            --dark: #1a1a1a;         
+            --text-soft: #666;      
+            --white: #ffffff;
+            --accent: #f7f0ed;
+            --shadow: 0 20px 40px rgba(0,0,0,0.05);
+            --transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- NAVEGACIÓN --- */
+        .navbar {
+            position: fixed;
+            top: 0; width: 100%;
+            padding: 25px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .logo h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .logo span { color: var(--primary); }
+
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-links button {
+            background: none; border: none;
+            color: var(--dark);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+            padding: 10px 5px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            position: relative;
+        }
+        
+        .nav-links button::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 0; height: 1px;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+
+        .nav-links button.active::after, .nav-links button:hover::after {
+            width: 100%;
+        }
+
+        .btn-cta-nav {
+            background: var(--dark) !important;
+            color: white !important;
+            padding: 12px 25px !important;
+            border-radius: 0 !important;
+            font-weight: 600 !important;
+        }
+        
+        .btn-cta-nav:hover {
+            background: var(--primary) !important;
+            transform: translateY(-2px);
+        }
+
+        /* --- CONTENEDOR DE SECCIONES --- */
+        .tab-content {
+            display: none; 
+            padding: 140px 10% 80px;
+            min-height: 100vh;
+        }
+        .tab-content.active { display: block; animation: sectionFade 0.8s ease forwards; }
+
+        @keyframes sectionFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- ESTILOS VISUALES --- */
+        .section-tag { 
+            color: var(--primary); 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 5px; 
+            font-size: 0.7rem; 
+            display: block; 
+            margin-bottom: 15px; 
+        }
+        
+        .section-title { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 3.5rem; 
+            margin-bottom: 30px; 
+            font-weight: 400;
+            line-height: 1.1;
+        }
+
+        .hero-split { 
+            display: grid; 
+            grid-template-columns: 1.2fr 0.8fr; 
+            gap: 60px; 
+            align-items: center; 
+        }
+        
+        .hero-img { position: relative; }
+        .hero-img img { 
+            width: 100%; 
+            height: 75vh; 
+            object-fit: cover; 
+            box-shadow: 30px 30px 0px var(--accent);
+        }
+
+        /* Galería de Tarifas/Horarios más pequeña */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            margin-top: 50px;
+        }
+        
+        .info-card {
+            background: var(--white);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .info-card:hover { transform: translateY(-10px); }
+        
+        .info-card img { 
+            width: 100%; 
+            max-height: 350px; 
+            object-fit: contain; 
+            background: #f9f9f9;
+            margin-bottom: 20px;
+        }
+
+        /* Servicios Detallados */
+        .services-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .service-item {
+            padding: 40px;
+            background: var(--white);
+            border: 1px solid rgba(0,0,0,0.03);
+            transition: var(--transition);
+        }
+        
+        .service-item:hover { border-color: var(--primary); }
+        .service-item h3 { font-family: 'Playfair Display', serif; margin-bottom: 15px; font-size: 1.5rem; }
+        .service-item p { font-size: 0.85rem; color: var(--text-soft); }
+
+        /* Formulario Premium */
+        .booking-container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 0.8fr 1.2fr;
+            background: var(--white);
+            box-shadow: var(--shadow);
+        }
+        
+        .booking-info {
+            background: var(--dark);
+            color: white;
+            padding: 50px;
+        }
+        
+        .booking-form-wrapper { padding: 50px; }
+        
+        .field { margin-bottom: 25px; }
+        .field label { 
+            font-size: 0.7rem; 
+            text-transform: uppercase; 
+            font-weight: 600; 
+            display: block; 
+            margin-bottom: 8px; 
+            letter-spacing: 1px;
+        }
+        
+        input, select, textarea { 
+            width: 100%; 
+            padding: 15px; 
+            border: 1px solid #eee; 
+            background: #fff; 
+            font-family: inherit; 
+            font-size: 0.9rem; 
+            transition: 0.3s;
+        }
+        
+        input:focus { border-color: var(--primary); outline: none; }
+
+        .btn-submit {
+            width: 100%;
+            padding: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .btn-submit:hover { background: var(--dark); }
+
+        /* --- RESPONSIVE MOBILE --- */
+        @media (max-width: 768px) {
+            .navbar { padding: 20px 5%; }
+            .nav-links { display: none; } 
+            
+            .tab-content {
+                display: block !important; /* Scroll continuo */
+                padding: 100px 5% 40px;
+                min-height: auto;
+            }
+            
+            .section-title { font-size: 2.2rem; }
+            .hero-split { grid-template-columns: 1fr; gap: 30px; }
+            .hero-img img { height: 45vh; box-shadow: 15px 15px 0px var(--accent); }
+            
+            .services-list { grid-template-columns: 1fr; }
+            .booking-container { grid-template-columns: 1fr; }
+            .booking-info { padding: 30px; }
+            .booking-form-wrapper { padding: 30px; }
+            
+            .info-grid { grid-template-columns: 1fr; }
+        }
+
+        /* FAQ */
+        .faq-item { border-bottom: 1px solid #eee; padding: 25px 0; cursor: pointer; }
+        .faq-q { font-weight: 600; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
+        .faq-a { max-height: 0; overflow: hidden; font-size: 0.85rem; color: var(--text-soft); transition: 0.5s; }
+        .faq-item.active .faq-a { max-height: 150px; padding-top: 15px; }
+
+        .wa-float {
+            position: fixed; bottom: 30px; right: 30px;
+            background: #25d366; color: white; width: 65px; height: 65px;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            z-index: 3000; box-shadow: 0 15px 30px rgba(37, 211, 102, 0.3);
+            transition: 0.3s;
+        }
+        .wa-float:hover { transform: scale(1.1); }
+    </style>
 </head>
 <body>
 
-  <header class="sidebar">
-      <div class="logo">
-        <h1>Gloow<span>.</span>Estetic</h1>
-      </div>
-      <nav>
-          <ul>
-            <li><a href="#inicio">Inicio</a></li>
-            <li><a href="#servicios">Servicios</a></li>
-            <li><a href="#horarios">Horarios</a></li>
-            <li><a href="#precios">Tarifas</a></li>
-            <li><a href="#galeria">Galería</a></li>
-            <li><a href="#pedir-cita" class="btn-nav">Pedir Cita</a></li>
-        </ul>
-      </nav>
-      <div class="sidebar-footer">
-        <p>@gloow.estetic_</p>
-      </div>
-  </header>
-
-  <main class="content">
-    
-    <section id="inicio" class="hero">
-      <div class="hero-text">
-        <span class="subtitle">Nail Care & Art</span>
-        <h2>Tu estilo, <br>tus reglas</h2>
-        <p>Especialistas en manicura acrílica y permanente. <br>Creamos arte en tus manos con la delicadeza que mereces.</p>
-        <a href="#pedir-cita" class="cta-button">Reservar ahora</a>
-      </div>
-      <div class="hero-image">
-        <img src="fotos/manicura1.jpeg" alt="Manicura Gloow">
-      </div>
-    </section>
-
-    <section id="servicios">
-      <h2 class="section-title">Servicios</h2>
-      <div class="servicios-grid">
-          <div class="servicio-card">
-              <span class="card-num">01</span>
-              <h3>Uñas Acrílicas</h3>
-              <p>Extensiones de alta resistencia con acabados naturales o diseños vanguardistas.</p>
-          </div>
-          <div class="servicio-card">
-              <span class="card-num">02</span>
-              <h3>Semipermanente</h3>
-              <p>Brillo impecable y duradero por más de 15 días. Cuidamos tu uña natural.</p>
-          </div>
-          <div class="servicio-card">
-              <span class="card-num">03</span>
-              <h3>Nail Art</h3>
-              <p>Desde minimalismo hasta cristales. Arte hecho a mano alzada para ti.</p>
-          </div>
-      </div>
-    </section>
-
-    <section id="horarios">
-      <h2 class="section-title">Horarios</h2>
-      <div class="img-container">
-        <img src="fotos/Agenda.jpeg" alt="Horarios Gloow" class="img-info">
-      </div>
-    </section>
-
-    <section id="precios">
-      <h2 class="section-title">Tarifas</h2>
-      <div class="img-container">
-        <img src="fotos/WhatsApp Image 2026-01-29 at 13.56.46.jpeg" alt="Tarifas Gloow" class="img-info">
-      </div>
-    </section>
-
-    <section id="galeria">
-      <h2 class="section-title">Galería</h2>
-      <div class="galeria-fotos">
-        <img src="fotos/manicura2.jpeg" alt="Diseño 1">
-        <img src="fotos/manicura3.jpeg" alt="Diseño 2">
-        <img src="fotos/FotoUña2.jpeg" alt="Diseño 3">
-      </div>
-    </section>
-
-    <section id="pedir-cita">
-      <div class="form-container">
-        <h2 class="section-title">Reserva tu Cita</h2>
-        <form id="citaForm">
-          <div class="input-box">
-            <input type="text" id="nombre" placeholder="Nombre completo" required>
-          </div>
-          <div class="row">
-            <div class="input-box">
-              <label>Fecha</label>
-              <input type="date" id="fecha" required>
-            </div>
-            <div class="input-box">
-              <label>Hora</label>
-              <input type="time" id="hora" required>
-            </div>
-          </div>
-          <div class="input-box">
-            <textarea id="mensaje" placeholder="¿Alguna idea para tu diseño?"></textarea>
-          </div>
-          <button type="submit" class="submit-btn">Enviar a WhatsApp</button>
-        </form>
-      </div>
-    </section>
-
-    <footer class="main-footer">
-      <div class="footer-content">
-        <h3>Gloow Estetic</h3>
-        <p>Castellón, España</p>
-        <div class="socials">
-          <a href="https://www.instagram.com/gloow.estetic_">Instagram</a>
-          <span>•</span>
-          <a href="tel:+34628302701">628 30 27 01</a>
+    <nav class="navbar">
+        <div class="logo"><h1>Gloow<span>.</span></h1></div>
+        <div class="nav-links">
+            <button class="active" onclick="showTab('inicio', this)">Inicio</button>
+            <button onclick="showTab('servicios', this)">Servicios</button>
+            <button onclick="showTab('tarifas', this)">Tarifas</button>
+            <button onclick="showTab('faq', this)">FAQ</button>
+            <button onclick="showTab('pedir-cita', this)" class="btn-cta-nav">Pedir Cita</button>
         </div>
-      </div>
-    </footer>
-  </main>
+    </nav>
 
-  <script src="js/main.js"></script>
+    <!-- SECCIÓN INICIO -->
+    <main id="inicio" class="tab-content active">
+        <div class="hero-split">
+            <div class="hero-text">
+                <span class="section-tag">Premium Russian Manicure</span>
+                <h2 class="section-title">Redefiniendo la elegancia en tus manos.</h2>
+                <p style="color: var(--text-soft); font-size: 1.1rem; margin-bottom: 40px; max-width: 500px;">
+                    Especialistas en técnica rusa, salud de la uña natural y diseños que cuentan una historia. Ubicados en el corazón de Castellón.
+                </p>
+                <div style="display: flex; gap: 20px;">
+                    <button class="btn-submit" style="width: auto; padding: 18px 40px;" onclick="showTab('pedir-cita')">Reservar Ahora</button>
+                </div>
+            </div>
+            <div class="hero-img">
+                <img src="fotos/manicura1.jpeg" alt="Manicura Gloow">
+            </div>
+        </div>
+    </main>
+
+    <!-- SECCIÓN SERVICIOS -->
+    <section id="servicios" class="tab-content">
+        <span class="section-tag">Nuestro Menú</span>
+        <h2 class="section-title">Servicios Exclusivos</h2>
+        <div class="services-list">
+            <div class="service-item">
+                <span style="color: var(--primary); font-size: 2rem;">01</span>
+                <h3>Técnica Rusa</h3>
+                <p>Limpieza profunda de cutícula con torno para un acabado impecable y duradero que permite el esmaltado bajo piel.</p>
+            </div>
+            <div class="service-item">
+                <span style="color: var(--primary); font-size: 2rem;">02</span>
+                <h3>Nivelación</h3>
+                <p>Arquitectura perfecta de la uña natural utilizando bases de alta calidad para corregir imperfecciones y dar resistencia.</p>
+            </div>
+            <div class="service-item">
+                <span style="color: var(--primary); font-size: 2rem;">03</span>
+                <h3>Nail Art</h3>
+                <p>Desde el minimalismo más puro hasta diseños complejos a mano alzada. Tu imaginación es nuestro límite.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN TARIFAS / HORARIOS (Más pequeñas y centradas) -->
+    <section id="tarifas" class="tab-content">
+        <div style="text-align: center; max-width: 700px; margin: 0 auto;">
+            <span class="section-tag">Detalles</span>
+            <h2 class="section-title">Información de interés</h2>
+            <p style="color: var(--text-soft);">Consulta nuestras tarifas actualizadas y disponibilidad horaria para planificar tu visita.</p>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-card">
+                <img src="fotos/WhatsApp Image 2026-01-29 at 13.56.46.jpeg" alt="Tarifas Gloow">
+                <h4 style="letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem;">Menú de Precios</h4>
+            </div>
+            <div class="info-card">
+                <img src="fotos/Agenda.jpeg" alt="Horarios Gloow">
+                <h4 style="letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem;">Horario Comercial</h4>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN FAQ -->
+    <section id="faq" class="tab-content">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <span class="section-tag">Atención al cliente</span>
+            <h2 class="section-title">Preguntas Frecuentes</h2>
+            <div class="faq-item" onclick="this.classList.toggle('active')">
+                <div class="faq-q">¿Cuánto tiempo dura una sesión? <span>↓</span></div>
+                <div class="faq-a">Depende del servicio, pero una manicura rusa con nivelación suele tardar entre 1h 30min y 2h para garantizar la perfección.</div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('active')">
+                <div class="faq-q">¿Cómo debo venir a mi cita? <span>↓</span></div>
+                <div class="faq-a">Preferiblemente con las manos limpias y sin material si es posible, o avísanos si traes material de otro centro.</div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('active')">
+                <div class="faq-q">¿Qué productos utilizáis? <span>↓</span></div>
+                <div class="faq-a">Solo marcas premium europeas que respetan la salud de la uña y garantizan una larga duración.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN RESERVAS -->
+    <section id="pedir-cita" class="tab-content">
+        <div class="booking-container">
+            <div class="booking-info">
+                <h3 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 20px;">Tu cita de lujo</h3>
+                <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 30px;">Selecciona tu fecha y servicio. Nos pondremos en contacto contigo vía WhatsApp para confirmar los detalles finales.</p>
+                <div style="font-size: 0.8rem;">
+                    <p>📍 Calle Mayor, Castellón</p>
+                    <p>📞 +34 628 302 701</p>
+                </div>
+            </div>
+            <div class="booking-form-wrapper">
+                <form id="citaForm">
+                    <div class="field">
+                        <label>Nombre Completo</label>
+                        <input type="text" id="nombre" placeholder="Nombre y apellidos" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="field">
+                            <label>Fecha</label>
+                            <input type="date" id="fecha" required>
+                        </div>
+                        <div class="field">
+                            <label>Hora</label>
+                            <input type="time" id="hora" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Servicio deseado</label>
+                        <select id="servicio">
+                            <option value="Manicura Rusa + Nivelación">Manicura Rusa + Nivelación</option>
+                            <option value="Extensión Acrílico/Gel">Extensión Acrílico / Gel</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Pedicura Luxury">Pedicura Luxury</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Mensaje / Notas adicionales</label>
+                        <textarea id="notas" rows="3" placeholder="Cuéntanos si necesitas Nail Art o traes material anterior..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">Confirmar Solicitud</button>
+                    <p id="status-msg" style="margin-top: 15px; font-size: 0.75rem; text-align: center;"></p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- WhatsApp Float -->
+    <a href="https://wa.me/34628302701" class="wa-float" target="_blank">
+        <svg viewBox="0 0 24 24" width="35" height="35" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    // ==========================================
+    // 1. CONFIGURACIÓN Y CONEXIÓN
+    // ==========================================
+    const supabaseUrl = "https://sujrgipyxtgwkntjqnse.supabase.co";
+    const supabaseKey = "sb_publishable_WKAUMKpxnf1T2ZwkuWkD8Q_jx-7lo8D";
+
+    const { createClient } = supabase;
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+    // ==========================================
+    // 2. NAVEGACIÓN Y TABS
+    // ==========================================
+    function showTab(tabId, btn) {
+        if (window.innerWidth > 768) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.classList.add('active');
+            if (btn) btn.classList.add('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            const target = document.getElementById(tabId);
+            const offset = 80;
+            const bodyRect = document.body.getBoundingClientRect().top;
+            const elementRect = target.getBoundingClientRect().top;
+            const elementPosition = elementRect - bodyRect;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+        }
+    }
+
+    // ==========================================
+    // 3. VALIDACIONES DE FORMULARIO
+    // ==========================================
+    const inputFecha = document.getElementById("fecha");
+    const inputHora = document.getElementById("hora");
+    const statusMsg = document.getElementById("status-msg");
+
+    // Fecha mínima hoy
+    inputFecha.setAttribute("min", new Date().toISOString().split("T")[0]);
+
+    // Bloqueo de Domingos
+    inputFecha.addEventListener("change", () => {
+        const seleccion = new Date(inputFecha.value);
+        const dia = seleccion.getUTCDay(); 
+        if (dia === 0) {
+            alert("🗓️ Los domingos el centro permanece cerrado. Por favor, elige otro día.");
+            inputFecha.value = "";
+        }
+    });
+
+    // Validación visual de horario
+    inputHora.addEventListener("change", () => {
+        const h = parseInt(inputHora.value.split(':')[0]);
+        if (h < 10 || h >= 20) {
+            statusMsg.innerText = "⏳ Horario comercial: 10:00 a 20:00.";
+            statusMsg.style.color = "#d68a9b";
+        } else {
+            statusMsg.innerText = "✨ Horario disponible.";
+            statusMsg.style.color = "#25d366";
+        }
+    });
+
+    // ==========================================
+    // 4. ENVÍO DE DATOS (SQL COMPLIANT)
+    // ==========================================
+    document.getElementById("citaForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const nom = document.getElementById("nombre").value;
+        const fec = document.getElementById("fecha").value;
+        const hor = document.getElementById("hora").value;
+        const ser = document.getElementById("servicio").value;
+        const not = document.getElementById("notas").value;
+
+        // Validación estricta de hora antes de enviar
+        const h = parseInt(hor.split(':')[0]);
+        if (h < 10 || h >= 20) {
+            alert("❌ Lo sentimos, solo aceptamos citas entre las 10:00 y las 20:00.");
+            return; 
+        }
+
+        try {
+            // INSERTAR EN TABLA 'citas'
+            // Nota: Se incluye 'telefono' con un valor genérico para cumplir con el NOT NULL de tu SQL
+            const { error } = await supabaseClient
+                .from("citas")
+                .insert([{
+                    nombre: nom,
+                    fecha: fec,
+                    hora: hor,
+                    servicio: ser,
+                    notas: not,
+                    telefono: "Cliente Web" 
+                }]);
+
+            if (error) throw error;
+
+            // ENVIAR POR WHATSAPP
+            const finalMsg = `¡Hola Gloow! ✨\n*Nueva solicitud de cita*\n\n*Cliente:* ${nom}\n*Fecha:* ${fec}\n*Hora:* ${hor}\n*Servicio:* ${ser}\n*Notas:* ${not || 'Sin notas'}`;
+            window.open(`https://wa.me/34628302701?text=${encodeURIComponent(finalMsg)}`, "_blank");
+
+            alert("✅ ¡Cita registrada con éxito! Redirigiendo a WhatsApp...");
+            document.getElementById("citaForm").reset();
+            statusMsg.innerText = "";
+
+        } catch (error) {
+            console.error("Error al guardar:", error);
+            alert("❌ Hubo un error al guardar: " + error.message);
+        }
+    });
+</script>
+
 </body>
 </html>
