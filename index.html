@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gloow Estetic | Luxury experience</title>
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -267,8 +266,8 @@
 
         /* FAQ */
         .faq-item { border-bottom: 1px solid #eee; padding: 25px 0; cursor: pointer; }
-        .faq-q { font-weight: 600; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
-        .faq-a { max-height: 0; overflow: hidden; font-size: 0.85rem; color: var(--text-soft); transition: 0.5s; }
+        .faq-item .faq-q { font-weight: 600; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
+        .faq-item .faq-a { max-height: 0; overflow: hidden; font-size: 0.85rem; color: var(--text-soft); transition: 0.5s; }
         .faq-item.active .faq-a { max-height: 150px; padding-top: 15px; }
 
         .wa-float {
@@ -294,7 +293,6 @@
         </div>
     </nav>
 
-    <!-- SECCIÓN INICIO -->
     <main id="inicio" class="tab-content active">
         <div class="hero-split">
             <div class="hero-text">
@@ -313,7 +311,6 @@
         </div>
     </main>
 
-    <!-- SECCIÓN SERVICIOS -->
     <section id="servicios" class="tab-content">
         <span class="section-tag">Nuestro Menú</span>
         <h2 class="section-title">Servicios Exclusivos</h2>
@@ -336,7 +333,6 @@
         </div>
     </section>
 
-    <!-- SECCIÓN TARIFAS / HORARIOS (Más pequeñas y centradas) -->
     <section id="tarifas" class="tab-content">
         <div style="text-align: center; max-width: 700px; margin: 0 auto;">
             <span class="section-tag">Detalles</span>
@@ -356,7 +352,6 @@
         </div>
     </section>
 
-    <!-- SECCIÓN FAQ -->
     <section id="faq" class="tab-content">
         <div style="max-width: 800px; margin: 0 auto;">
             <span class="section-tag">Atención al cliente</span>
@@ -376,7 +371,6 @@
         </div>
     </section>
 
-    <!-- SECCIÓN RESERVAS -->
     <section id="pedir-cita" class="tab-content">
         <div class="booking-container">
             <div class="booking-info">
@@ -423,35 +417,27 @@
         </div>
     </section>
 
-    <!-- WhatsApp Float -->
     <a href="https://wa.me/34628302701" class="wa-float" target="_blank">
         <svg viewBox="0 0 24 24" width="35" height="35" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
     </a>
-<!-- Supabase -->
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-    // ==========================================
-    // 1. CONFIGURACIÓN Y CONEXIÓN
-    // ==========================================
+    // 1. CONFIGURACIÓN
     const supabaseUrl = "https://sujrgipyxtgwkntjqnse.supabase.co";
     const supabaseKey = "sb_publishable_WKAUMKpxnf1T2ZwkuWkD8Q_jx-7lo8D";
-
     const { createClient } = supabase;
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-    // ==========================================
-    // 2. NAVEGACIÓN Y TABS
-    // ==========================================
+    // 2. NAVEGACIÓN
     function showTab(tabId, btn) {
         if (window.innerWidth > 768) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
-
             const targetTab = document.getElementById(tabId);
             if (targetTab) targetTab.classList.add('active');
             if (btn) btn.classList.add('active');
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
             const target = document.getElementById(tabId);
@@ -460,22 +446,17 @@
             const elementRect = target.getBoundingClientRect().top;
             const elementPosition = elementRect - bodyRect;
             const offsetPosition = elementPosition - offset;
-
             window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
         }
     }
 
-    // ==========================================
-    // 3. VALIDACIONES DE FORMULARIO
-    // ==========================================
+    // 3. VALIDACIONES
     const inputFecha = document.getElementById("fecha");
     const inputHora = document.getElementById("hora");
     const statusMsg = document.getElementById("status-msg");
 
-    // Fecha mínima hoy
     inputFecha.setAttribute("min", new Date().toISOString().split("T")[0]);
 
-    // Bloqueo de Domingos
     inputFecha.addEventListener("change", () => {
         const seleccion = new Date(inputFecha.value);
         const dia = seleccion.getUTCDay(); 
@@ -485,7 +466,6 @@
         }
     });
 
-    // Validación visual de horario
     inputHora.addEventListener("change", () => {
         const h = parseInt(inputHora.value.split(':')[0]);
         if (h < 10 || h >= 20) {
@@ -497,9 +477,7 @@
         }
     });
 
-    // ==========================================
-    // 4. ENVÍO DE DATOS (SQL COMPLIANT)
-    // ==========================================
+    // 4. ENVÍO DE DATOS (CORREGIDO PARA MÓVIL)
     document.getElementById("citaForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -509,7 +487,6 @@
         const ser = document.getElementById("servicio").value;
         const not = document.getElementById("notas").value;
 
-        // Validación estricta de hora antes de enviar
         const h = parseInt(hor.split(':')[0]);
         if (h < 10 || h >= 20) {
             alert("❌ Lo sentimos, solo aceptamos citas entre las 10:00 y las 20:00.");
@@ -517,8 +494,7 @@
         }
 
         try {
-            // INSERTAR EN TABLA 'citas'
-            // Nota: Se incluye 'telefono' con un valor genérico para cumplir con el NOT NULL de tu SQL
+            // INSERTAR EN SUPABASE
             const { error } = await supabaseClient
                 .from("citas")
                 .insert([{
@@ -532,13 +508,14 @@
 
             if (error) throw error;
 
-            // ENVIAR POR WHATSAPP
+            // PREPARAR WHATSAPP
             const finalMsg = `¡Hola Gloow! ✨\n*Nueva solicitud de cita*\n\n*Cliente:* ${nom}\n*Fecha:* ${fec}\n*Hora:* ${hor}\n*Servicio:* ${ser}\n*Notas:* ${not || 'Sin notas'}`;
-            window.open(`https://wa.me/34628302701?text=${encodeURIComponent(finalMsg)}`, "_blank");
+            const waUrl = `https://wa.me/34628302701?text=${encodeURIComponent(finalMsg)}`;
 
-            alert("✅ ¡Cita registrada con éxito! Redirigiendo a WhatsApp...");
+            // NOTIFICAR Y REDIRIGIR (window.location.href funciona siempre en móvil)
+            alert("✅ ¡Cita registrada con éxito! Vamos a confirmar por WhatsApp...");
             document.getElementById("citaForm").reset();
-            statusMsg.innerText = "";
+            window.location.href = waUrl;
 
         } catch (error) {
             console.error("Error al guardar:", error);
