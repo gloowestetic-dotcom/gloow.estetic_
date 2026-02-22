@@ -192,14 +192,14 @@
                     <input type="text" id="w_nombre" placeholder="Tu nombre completo" required>
                     <select id="w_servicio" required>
                         <option value="" disabled selected>Selecciona un servicio</option>
-                        <option>Manicura permanente (12€)</option>
-                        <option>Manicura + Acrílico (16€)</option>
-                        <option>Relieves (2€)</option>
-                        <option>Flor 3D (2€)</option>
-                        <option>Diseños (3€)</option>
-                        <option>LIFTING DE PESTAÑAS (25€)</option>
-                        <option>DEPILACIÓN Cejas (8€)</option>
-                        <option>DEPILACIÓN Labio (5€)</option>
+                        <option value="1">Manicura permanente (12€)</option>
+                        <option value="2">Manicura + Acrílico (16€)</option>
+                        <option value="3">Relieves (2€)</option>
+                        <option value="4">Flor 3D (2€)</option>
+                        <option value="5">Diseños (3€)</option>
+                        <option value="6">LIFTING DE PESTAÑAS (25€)</option>
+                        <option value="7">DEPILACIÓN Cejas (8€)</option>
+                        <option value="8">DEPILACIÓN Labio (5€)</option>
                     </select>
                     <button type="button" class="btn-step" onclick="goStep(2)">Siguiente</button>
                 </div>
@@ -325,17 +325,16 @@
         
         const reserva = {
             nombre: document.getElementById('w_nombre').value,
-            servicio: document.getElementById('w_servicio').value,
+            servicio_id: parseInt(document.getElementById('w_servicio').value),
             fecha: document.getElementById('w_fecha').value,
             hora: document.getElementById('w_hora_val').value,
-            notas: document.getElementById('w_notas').value,
-            telefono: "Web"
+            notas: document.getElementById('w_notas').value
         };
 
         const { error } = await _supabase.from('citas').insert([reserva]);
         
         if(!error) {
-            const msj = `✨ *Nueva Cita Gloow* ✨\n\n*Cliente:* ${reserva.nombre}\n*Servicio:* ${reserva.servicio}\n*Día:* ${reserva.fecha}\n*Hora:* ${reserva.hora}\n*Dirección:* ${reserva.notas}`;
+            const msj = `✨ *Nueva Cita Gloow* ✨\n\n*Servicio ID:* ${reserva.servicio_id}\n*Servicio:* ${reserva.servicio}\n*Día:* ${reserva.fecha}\n*Hora:* ${reserva.hora}\n*Dirección:* ${reserva.notas}`;
             window.location.href = `https://wa.me/34628302701?text=${encodeURIComponent(msj)}`;
         } else { 
             alert("Hubo un error al guardar la cita. Inténtalo de nuevo."); 
