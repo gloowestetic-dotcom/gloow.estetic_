@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin | Gloow</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #f2a6b7; --bg: #fdfaf8; --dark: #1a1a1a; }
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--bg); 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; margin: 0; 
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%; max-width: 350px; text-align: center;
+        }
+        h2 { color: var(--dark); margin-bottom: 25px; font-weight: 600; }
+        input {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 1px solid #ddd; border-radius: 8px;
+            box-sizing: border-box; font-family: inherit;
+        }
+        button {
+            width: 100%; padding: 12px;
+            background-color: var(--primary); color: white;
+            border: none; border-radius: 8px;
+            font-weight: 600; cursor: pointer; transition: 0.3s;
+        }
+        button:hover { opacity: 0.9; }
+        #mensaje { margin-top: 15px; font-size: 0.85rem; color: #e74c3c; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h2>Gloow Admin</h2>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Tu email" required>
+            <input type="password" id="password" placeholder="Tu contraseña" required>
+            <button type="submit" id="btnEntrar">Entrar al Panel</button>
+        </form>
+        <div id="mensaje"></div>
+    </div>
+
+    <script>
+        // REEMPLAZA CON TUS DATOS DE SUPABASE
+        const _supabase = supabase.createClient("https://sujrgipyxtgwkntjqnse.supabase.co", "sb_publishable_WKAUMKpxnf1T2ZwkuWkD8Q_jx-7lo8D");
+
+        const loginForm = document.getElementById('loginForm');
+        const mensaje = document.getElementById('mensaje');
+        const btn = document.getElementById('btnEntrar');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            btn.innerText = "Verificando...";
+            btn.disabled = true;
+            mensaje.style.display = "none";
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Intento de inicio de sesión
+            const { data, error } = await _supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                mensaje.innerText = "Error: " + error.message;
+                mensaje.style.display = "block";
+                btn.innerText = "Entrar al Panel";
+                btn.disabled = false;
+            } else {
+                // Login exitoso, redirigir al panel admin
+                window.location.href = "admin.html";
+            }
+        });
+    </script>
+</body>
+</html>

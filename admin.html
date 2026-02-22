@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin | Gloow</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #f2a6b7; --dark: #1a1a1a; --bg: #fdfaf8; --danger: #e74c3c; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--dark); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-logout { background: #eee; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-family: inherit; }
+        
+        .filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        input[type="date"] { padding: 10px; border: 1px solid #ddd; border-radius: 5px; flex-grow: 1; font-family: inherit; }
+        .btn-hoy { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+
+        .cita-card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; border-left: 5px solid var(--primary); animation: fadeIn 0.3s ease; }
+        .cita-header { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 5px; }
+        .cita-info { font-size: 0.9rem; color: #666; margin-bottom: 10px; line-height: 1.4; }
+        .btn-eliminar { color: var(--danger); background: none; border: none; cursor: pointer; font-size: 0.8rem; padding: 0; text-decoration: underline; font-family: inherit; }
+        
+        .error-msg { background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; border: 1px solid #f87171; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>Panel Gloow</h2>
+        <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+    </div>
+
+    <div class="filters">
+        <input type="date" id="filtroFecha" onchange="cargarCitas()">
+        <button class="btn-hoy" onclick="verHoy()">Hoy</button>
+    </div>
+
+    <div id="listaCitas">
+        <p>Verificando acceso...</p>
+    </div>
+
+    <script>
+        // REEMPLAZA CON TUS DATOS REALES
+        const _supabase = supabase.createClient("https://sujrgipyxtgwkntjqnse.supabase.co", "sb_publishable_WKAUMKpxnf1T2ZwkuWkD8Q_jx-7lo8D");
+
+        // 1. Verificar si el usuario está logueado
+        async function checkUser() {
+            const { data: { user }, error } = await _supabase.auth.getUser();
+            if (error || !user) {
+                window.location.href = "login.html";
+            } else {
+                verHoy();
+            }
+        }
+
+        async function logout() {
+            await _supabase.auth.signOut();
+            window.location.href = "login.html";
+        }
+
+        function verHoy() {
+            // Ajuste de fecha local para evitar errores de zona horaria
+            const ahora = new Date();
+            const offset = ahora.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(ahora - offset)).toISOString().slice(0, 10);
+            
+            document.getElementById('filtroFecha').value = localISOTime;
+            cargarCitas();
+        }
+
+        async function cargarCitas() {
+            const fecha = document.getElementById('filtroFecha').value;
+            const container = document.getElementById('listaCitas');
+            container.innerHTML = "<p>Buscando citas...</p>";
+
+            // Intentamos traer las citas y el nombre del servicio
+            const { data: citas, error } = await _supabase
+                .from('citas')
+                .select(`
+                    *,
+                    servicios (
+                        nombre
+                    )
+                `)
+                .eq('fecha', fecha)
+                .order('hora', { ascending: true });
+
+            if (error) {
+                console.error("Error Supabase:", error);
+                container.innerHTML = `
+                    <div class="error-msg">
+                        <b>Error al cargar:</b> ${error.message}<br>
+                        <small>Revisa las políticas RLS de las tablas 'citas' y 'servicios'.</small>
+                    </div>`;
+                return;
+            }
+
+            if (!citas || citas.length === 0) {
+                container.innerHTML = "<p style='text-align:center; color:#999;'>No hay citas para este día.</p>";
+                return;
+            }
+
+            container.innerHTML = citas.map(cita => `
+                <div class="cita-card">
+                    <div class="cita-header">
+                        <span>${cita.hora}h - ${cita.nombre}</span>
+                    </div>
+                    <div class="cita-info">
+                        <b>Servicio:</b> ${cita.servicios ? cita.servicios.nombre : 'Servicio no vinculado'}<br>
+                        <b>Lugar:</b> ${cita.notas || 'Sin dirección'}
+                    </div>
+                    <button class="btn-eliminar" onclick="eliminarCita(${cita.id})">Eliminar cita</button>
+                </div>
+            `).join('');
+        }
+
+        async function eliminarCita(id) {
+            if(confirm("¿Estás segura de que quieres borrar esta cita?")) {
+                const { error } = await _supabase.from('citas').delete().eq('id', id);
+                if (error) alert("No se pudo eliminar: " + error.message);
+                else cargarCitas();
+            }
+        }
+
+        // Arrancar
+        checkUser();
+    </script>
+</body>
+</html>
