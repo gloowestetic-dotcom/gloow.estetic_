@@ -98,14 +98,14 @@
         .step { padding: 30px; display: none; }
         .step.active { display: block; animation: fadeIn 0.4s; }
 
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; font-family: inherit; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; font-family: inherit; font-size: 16px; /* Evita zoom automático en iOS */ }
 
         .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px; }
         .time-slot { 
-            padding: 10px; border: 1px solid var(--primary); border-radius: 6px; text-align: center; 
-            cursor: pointer; font-size: 0.8rem; font-weight: 600; 
+            padding: 12px 5px; border: 1px solid var(--primary); border-radius: 6px; text-align: center; 
+            cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s;
         }
-        .time-slot:hover { background: var(--primary); color: white; }
+        .time-slot:active { background: var(--primary); color: white; }
         .time-slot.disabled { background: #f0f0f0; border-color: #ddd; color: #ccc; cursor: not-allowed; }
 
         .btn-step { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
@@ -253,11 +253,13 @@
 <script>
     const _supabase = supabase.createClient("https://sujrgipyxtgwkntjqnse.supabase.co", "sb_publishable_WKAUMKpxnf1T2ZwkuWkD8Q_jx-7lo8D");
 
+    // Establecer fecha mínima (hoy)
     document.getElementById('w_fecha').min = new Date().toISOString().split("T")[0];
 
     // MODAL RESERVA
     function openModal() { document.getElementById('modalCita').style.display = 'flex'; goStep(1); }
     function closeModal() { document.getElementById('modalCita').style.display = 'none'; }
+    
     function goStep(n) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step'+n).classList.add('active');
@@ -271,25 +273,45 @@
         document.getElementById('cancelMessage').style.display = 'none';
     }
 
+    // COMPROBAR DISPONIBILIDAD
     async function checkAvailability() {
-        const fecha = document.getElementById('w_fecha').value;
-        if(!fecha) return alert("Elige una fecha");
+        const fechaVal = document.getElementById('w_fecha').value;
+        if(!fechaVal) return alert("Por favor, selecciona una fecha");
+        
         const grid = document.getElementById('w_time_grid');
-        grid.innerHTML = "Cargando...";
+        grid.innerHTML = "<p style='grid-column:1/-1; text-align:center;'>Cargando huecos...</p>";
+        
+        // Pasamos al paso 3 inmediatamente para mejor UX en móvil
         goStep(3);
-        const { data: ocupadas } = await _supabase.from('citas').select('hora').eq('fecha', fecha);
+
+        const { data: ocupadas } = await _supabase.from('citas').select('hora').eq('fecha', fechaVal);
         const listaOcupadas = ocupadas ? ocupadas.map(c => c.hora) : [];
-        const dia = new Date(fecha).getUTCDay();
-        const slots = (dia === 0 || dia === 6) ? ["10:00", "11:30", "13:00"] : ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"];
+        
+        // Corregimos el cálculo del día para evitar fallos de zona horaria en móvil
+        const partes = fechaVal.split('-');
+        const diaSemana = new Date(partes[0], partes[1] - 1, partes[2]).getDay(); 
+        
+        // 0=Dom, 6=Sáb
+        const esFinde = (diaSemana === 0 || diaSemana === 6);
+        const slots = esFinde ? ["10:00", "11:30", "13:00"] : ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"];
+
         grid.innerHTML = "";
         slots.forEach(h => {
             const d = document.createElement('div');
             d.className = 'time-slot';
             if(listaOcupadas.includes(h)) {
-                d.classList.add('disabled'); d.innerText = h + " 🔒";
+                d.classList.add('disabled');
+                d.innerHTML = h + "<br><small>Ocupado</small>";
             } else {
                 d.innerText = h;
-                d.onclick = () => { document.getElementById('w_hora_val').value = h; goStep(4); };
+                d.onclick = () => {
+                    // Feedback visual antes de saltar paso
+                    document.querySelectorAll('.time-slot').forEach(el => el.style.background = "");
+                    d.style.background = "var(--primary)";
+                    d.style.color = "white";
+                    document.getElementById('w_hora_val').value = h;
+                    setTimeout(() => goStep(4), 250);
+                };
             }
             grid.appendChild(d);
         });
@@ -299,7 +321,8 @@
     document.getElementById('reservaWizard').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnFinish');
-        btn.innerText = "Reservando..."; btn.disabled = true;
+        btn.innerText = "Confirmando..."; btn.disabled = true;
+        
         const reserva = {
             nombre: document.getElementById('w_nombre').value,
             servicio: document.getElementById('w_servicio').value,
@@ -308,11 +331,17 @@
             notas: document.getElementById('w_notas').value,
             telefono: "Web"
         };
+
         const { error } = await _supabase.from('citas').insert([reserva]);
+        
         if(!error) {
             const msj = `✨ *Nueva Cita Gloow* ✨\n\n*Cliente:* ${reserva.nombre}\n*Servicio:* ${reserva.servicio}\n*Día:* ${reserva.fecha}\n*Hora:* ${reserva.hora}\n*Dirección:* ${reserva.notas}`;
             window.location.href = `https://wa.me/34628302701?text=${encodeURIComponent(msj)}`;
-        } else { alert("Error"); btn.disabled = false; }
+        } else { 
+            alert("Hubo un error al guardar la cita. Inténtalo de nuevo."); 
+            btn.disabled = false; 
+            btn.innerText = "Confirmar Reserva";
+        }
     });
 
     // SUBMIT CANCELACIÓN
@@ -334,13 +363,13 @@
             msg.style.background = "#f8d7da"; msg.style.color = "#721c24"; msg.innerText = "Error de conexión.";
             btn.disabled = false; btn.innerText = "Cancelar Cita";
         } else if (count === 0) {
-            msg.style.background = "#fff3cd"; msg.style.color = "#856404"; msg.innerText = "No se encontró la cita.";
+            msg.style.background = "#fff3cd"; msg.style.color = "#856404"; msg.innerText = "No se encontró ninguna cita con esos datos.";
             btn.disabled = false; btn.innerText = "Cancelar Cita";
         } else {
             msg.style.background = "#d4edda"; msg.style.color = "#155724"; msg.innerText = "Cita cancelada con éxito.";
             setTimeout(() => {
-                if(confirm("¿Avisar por WhatsApp?")) {
-                    window.location.href = `https://wa.me/34628302701?text=${encodeURIComponent('Hola, he cancelado mi cita del '+fecha)}`;
+                if(confirm("¿Quieres avisar por WhatsApp de la cancelación?")) {
+                    window.location.href = `https://wa.me/34628302701?text=${encodeURIComponent('Hola, he cancelado mi cita del día '+fecha+' a las '+hora)}`;
                 } else { location.reload(); }
             }, 1000);
         }
