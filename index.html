@@ -275,47 +275,61 @@
 
     // COMPROBAR DISPONIBILIDAD
     async function checkAvailability() {
-        const fechaVal = document.getElementById('w_fecha').value;
-        if(!fechaVal) return alert("Por favor, selecciona una fecha");
-        
-        const grid = document.getElementById('w_time_grid');
-        grid.innerHTML = "<p style='grid-column:1/-1; text-align:center;'>Cargando huecos...</p>";
-        
-        // Pasamos al paso 3 inmediatamente para mejor UX en móvil
-        goStep(3);
+    const fechaSeleccionada = document.getElementById('w_fecha').value;
+    if(!fechaSeleccionada) return alert("Por favor, selecciona una fecha");
+    
+    const grid = document.getElementById('w_time_grid');
+    grid.innerHTML = "<p style='grid-column:1/-1; text-align:center;'>Cargando huecos...</p>";
+    
+    goStep(3);
 
-        const { data: ocupadas } = await _supabase.from('citas').select('hora').eq('fecha', fechaVal);
-        const listaOcupadas = ocupadas ? ocupadas.map(c => c.hora) : [];
-        
-        // Corregimos el cálculo del día para evitar fallos de zona horaria en móvil
-        const partes = fechaVal.split('-');
-        const diaSemana = new Date(partes[0], partes[1] - 1, partes[2]).getDay(); 
-        
-        // 0=Dom, 6=Sáb
-        const esFinde = (diaSemana === 0 || diaSemana === 6);
-        const slots = esFinde ? ["10:00", "11:30", "13:00"] : ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"];
+    // 1. Obtener citas ya reservadas
+    const { data: ocupadas } = await _supabase.from('citas').select('hora').eq('fecha', fechaSeleccionada);
+    const listaOcupadas = ocupadas ? ocupadas.map(c => c.hora) : [];
+    
+    // 2. Determinar si es hoy y qué hora es
+    const ahora = new Date();
+    const hoyISO = ahora.toISOString().split('T')[0];
+    const horaActual = ahora.getHours() + ":" + ahora.getMinutes().toString().padStart(2, '0');
 
-        grid.innerHTML = "";
-        slots.forEach(h => {
-            const d = document.createElement('div');
-            d.className = 'time-slot';
-            if(listaOcupadas.includes(h)) {
-                d.classList.add('disabled');
-                d.innerHTML = h + "<br><small>Ocupado</small>";
-            } else {
-                d.innerText = h;
-                d.onclick = () => {
-                    // Feedback visual antes de saltar paso
-                    document.querySelectorAll('.time-slot').forEach(el => el.style.background = "");
-                    d.style.background = "var(--primary)";
-                    d.style.color = "white";
-                    document.getElementById('w_hora_val').value = h;
-                    setTimeout(() => goStep(4), 250);
-                };
-            }
-            grid.appendChild(d);
-        });
-    }
+    // 3. Configurar horarios según el día
+    const partes = fechaSeleccionada.split('-');
+    const diaSemana = new Date(partes[0], partes[1] - 1, partes[2]).getDay(); 
+    const esFinde = (diaSemana === 0 || diaSemana === 6);
+    const slotsDefinidos = esFinde ? ["10:00", "11:30", "13:00"] : ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"];
+
+    grid.innerHTML = "";
+
+    slotsDefinidos.forEach(h => {
+        const d = document.createElement('div');
+        d.className = 'time-slot';
+        
+        // REGLA 1: ¿La hora ya está ocupada en la base de datos?
+        const estaOcupada = listaOcupadas.includes(h);
+        
+        // REGLA 2: Si es hoy, ¿la hora ya ha pasado?
+        const esHoy = (fechaSeleccionada === hoyISO);
+        const yaHaPasado = esHoy && (h <= horaActual);
+
+        if(estaOcupada || yaHaPasado) {
+            d.classList.add('disabled');
+            d.innerHTML = h + (yaHaPasado ? "<br><small>Pasada</small>" : "<br><small>Ocupado</small>");
+        } else {
+            d.innerText = h;
+            d.onclick = () => {
+                document.querySelectorAll('.time-slot').forEach(el => {
+                    el.style.background = "";
+                    el.style.color = "";
+                });
+                d.style.background = "var(--primary)";
+                d.style.color = "white";
+                document.getElementById('w_hora_val').value = h;
+                setTimeout(() => goStep(4), 250);
+            };
+        }
+        grid.appendChild(d);
+    });
+}
 
 // SUBMIT RESERVA con restricción de una cita por día/persona
     document.getElementById('reservaWizard').addEventListener('submit', async (e) => {
