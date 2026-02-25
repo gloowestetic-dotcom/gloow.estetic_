@@ -307,9 +307,15 @@
         // REGLA 1: ¿La hora ya está ocupada en la base de datos?
         const estaOcupada = listaOcupadas.includes(h);
         
-        // REGLA 2: Si es hoy, ¿la hora ya ha pasado?
+        // REGLA 2: Si es hoy, ¿la hora ya ha pasado?   
+        const margenHoras = 2;
+        const fechalimite = new Date();
+        fechalimite.setHours(fechalimite.getHours() + margenHoras);
+        const horaLimiteStr = fechaLimite.getHours().toString().padStart(2, '0') + ":" + fechaLimite.getMinutes().toString().padStart(2, '0');
+
+        // 4. La nueva constante de validación
         const esHoy = (fechaSeleccionada === hoyISO);
-        const yaHaPasado = esHoy && (h <= horaActual);
+        const yaHaPasado = esHoy && (h <= horaLimiteStr);
 
         if(estaOcupada || yaHaPasado) {
             d.classList.add('disabled');
