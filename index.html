@@ -317,27 +317,48 @@
         });
     }
 
-    // SUBMIT RESERVA
+// SUBMIT RESERVA con restricción de una cita por día/persona
     document.getElementById('reservaWizard').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnFinish');
-        btn.innerText = "Confirmando..."; btn.disabled = true;
-        
+    
+        // 1. Extraer datos
+        const nombreVal = document.getElementById('w_nombre').value.trim();
+        const fechaVal = document.getElementById('w_fecha').value;
+    
+        btn.innerText = "Verificando..."; 
+        btn.disabled = true;
+
+        // 2. VALIDACIÓN: ¿Ya tiene otra cita este día?
+        const { data: citasExistentes, error: errorCheck } = await _supabase
+            .from('citas')
+            .select('id')
+            .eq('nombre', nombreVal)
+            .eq('fecha', fechaVal);
+
+        if (citasExistentes && citasExistentes.length > 0) {
+            alert("Ya tienes una reserva para este día. Solo se permite una reserva por día.");
+            btn.innerText = "Confirmar Reserva";
+            btn.disabled = false;
+            return; // Detenemos la ejecución aquí
+        }
+
+        // 3. Si no hay citas, procedemos al guardado normal
         const reserva = {
-            nombre: document.getElementById('w_nombre').value,
+            nombre: nombreVal,
             servicio_id: parseInt(document.getElementById('w_servicio').value),
-            fecha: document.getElementById('w_fecha').value,
+            fecha: fechaVal,
             hora: document.getElementById('w_hora_val').value,
             notas: document.getElementById('w_notas').value
         };
 
-        const { error } = await _supabase.from('citas').insert([reserva]);
-        
-        if(!error) {
-            const msj = `✨ *Nueva Cita Gloow* ✨\n\n*Servicio ID:* ${reserva.servicio_id}\n*Servicio:* ${reserva.servicio}\n*Día:* ${reserva.fecha}\n*Hora:* ${reserva.hora}\n*Dirección:* ${reserva.notas}`;
+        const { error: errorInsert } = await _supabase.from('citas').insert([reserva]);
+    
+        if(!errorInsert) {
+            const msj = `✨ *Nueva Cita Gloow* ✨\n\n*Nombre:* ${reserva.nombre}\n*Día:* ${reserva.fecha}\n*Hora:* ${reserva.hora}`;
             window.location.href = `https://wa.me/34628302701?text=${encodeURIComponent(msj)}`;
         } else { 
-            alert("Hubo un error al guardar la cita. Inténtalo de nuevo."); 
+            alert("Hubo un error al guardar la cita."); 
             btn.disabled = false; 
             btn.innerText = "Confirmar Reserva";
         }
