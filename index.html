@@ -1,230 +1,387 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gloow Estetic | Reservas Múltiples</title>
+    <title>Gloow Estetic | Manicura a Domicilio Burriana</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --primary: #f2a6b7; --dark: #1a1a1a; --bg: #fdfaf8; }
-        body { font-family: 'Montserrat', sans-serif; background: var(--bg); margin: 0; }
-        
-        /* Estilos del Modal y Wizard */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
-        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 15px; overflow: hidden; position: relative; }
-        .step { padding: 30px; display: none; }
-        .step.active { display: block; }
-        
-        /* Lista de Servicios con Checkbox */
-        .services-list { max-height: 250px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
-        .service-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #f9f9f9; cursor: pointer; }
-        .service-item:last-child { border: none; }
-        .service-item input { width: auto; margin-right: 15px; transform: scale(1.2); }
-        .service-info { flex: 1; }
-        .service-info span { display: block; font-size: 0.8rem; color: #888; }
 
-        /* Time Grid */
+    <style>
+        :root {
+            --bg: #fdfaf8;   
+            --primary: #f2a6b7;   
+            --dark: #1a1a1a;         
+            --text-soft: #666;      
+            --white: #ffffff;
+            --accent: #f7f0ed;
+            --transition: all 0.4s ease;
+            --danger: #e74c3c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- NAVEGACIÓN --- */
+        .navbar {
+            position: fixed;
+            top: 0; width: 100%;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .logo h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; letter-spacing: 3px; text-transform: uppercase; }
+        .logo span { color: var(--primary); }
+
+        .btn-cta-nav {
+            background: var(--dark);
+            color: white !important;
+            padding: 10px 18px;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.7rem;
+            transition: var(--transition);
+        }
+        .btn-cta-nav:hover { background: var(--primary); }
+
+        /* --- SECCIONES --- */
+        section { padding: 80px 6% 40px; }
+        .section-tag { color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 0.65rem; display: block; margin-bottom: 10px; }
+        .section-title { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 25px; font-weight: 400; line-height: 1.2; }
+
+        .hero-split { display: grid; grid-template-columns: 1fr; gap: 30px; text-align: center; padding-top: 40px; }
+        .hero-img img { width: 100%; height: 350px; object-fit: cover; box-shadow: 15px 15px 0 var(--accent); }
+
+        .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1/1; }
+
+        .services-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .service-card { padding: 20px; background: white; border: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .service-price { color: var(--primary); font-weight: 700; }
+
+        .schedule-table { width: 100%; border-collapse: collapse; background: white; margin-top: 20px; }
+        .schedule-table td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.85rem; }
+
+        /* --- MODALES --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px;
+        }
+        .modal-content {
+            background: var(--white); width: 100%; max-width: 500px;
+            border-radius: 12px; position: relative; overflow: hidden;
+        }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--primary); z-index: 10; }
+
+        .progress-bar { height: 5px; background: #eee; width: 100%; }
+        #progress { height: 100%; background: var(--primary); width: 25%; transition: 0.4s; }
+
+        .step { padding: 30px; display: none; }
+        .step.active { display: block; animation: fadeIn 0.4s; }
+
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; font-family: inherit; font-size: 16px; }
+
         .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px; }
-        .time-slot { padding: 12px 5px; border: 1px solid var(--primary); border-radius: 6px; text-align: center; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        .time-slot { 
+            padding: 12px 5px; border: 1px solid var(--primary); border-radius: 6px; text-align: center; 
+            cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s;
+        }
+        .time-slot:active { background: var(--primary); color: white; }
         .time-slot.disabled { background: #f0f0f0; border-color: #ddd; color: #ccc; cursor: not-allowed; }
-        
-        button { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        .btn-back { background: none; color: #999; margin-top: 5px; }
+
+        .btn-step { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        .btn-back { background: none; border: none; color: #999; width: 100%; margin-top: 10px; cursor: pointer; }
+
+        @media (min-width: 768px) {
+            .hero-split { grid-template-columns: 1.2fr 0.8fr; text-align: left; align-items: center; gap: 60px; }
+            .gallery-grid { grid-template-columns: repeat(4, 1fr); }
+            .services-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .wa-float { position: fixed; bottom: 20px; right: 20px; background: #25d366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; z-index: 1500; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
+    <h1>PAU</h1>
+    <nav class="navbar">
+        <div class="logo"><h1>Gloow<span>.</span></h1></div>
+        <button class="btn-cta-nav" onclick="openModal()">Pedir Cita</button>
+    </nav>
 
-<div style="text-align:center; padding: 50px;">
-    <button onclick="openModal()" style="max-width:200px;">Reservar Cita</button>
-</div>
+    <section id="inicio">
+        <div class="hero-split">
+            <div class="hero-text">
+                <span class="section-tag">Premium Home Service</span>
+                <h2 class="section-title">Elegancia en tus manos, sin salir de casa.</h2>
+                <button class="btn-cta-nav" onclick="openModal()" style="padding: 18px 30px; width: 100%; max-width: 300px;">Reservar ahora</button>
+            </div>
+            <div class="hero-img"><img src="fotos/manicura1.jpeg" alt="Manicura Gloow"></div>
+        </div>
+    </section>
 
-<div class="modal-overlay" id="modalCita">
-    <div class="modal-content">
-        <form id="reservaWizard">
-            <div class="step active" id="step1">
-                <h3 style="font-family:'Playfair Display'">¿Qué servicios deseas?</h3>
-                <input type="text" id="w_nombre" placeholder="Tu nombre completo" required>
-                
-                <div class="services-list" id="servicesContainer">
-                    </div>
-                
-                <div id="total_summary" style="font-size: 0.85rem; margin-bottom: 10px; color: var(--primary); font-weight: 600;">
-                    Total: 0€ | Duración: 0 min
+    <section id="trabajos" style="background: #fff;">
+        <span class="section-tag">Portfolio</span>
+        <h2 class="section-title">Mis Trabajos</h2>
+        <div class="gallery-grid">
+            <div class="gallery-item"><img src="fotos/manicura1.jpeg"></div>
+            <div class="gallery-item"><img src="fotos/manicura2.jpeg"></div>
+            <div class="gallery-item"><img src="fotos/manicura3.jpeg"></div>
+            <div class="gallery-item"><img src="fotos/FotoUña2.jpeg"></div>
+        </div>
+    </section>
+
+    <section id="servicios">
+        <span class="section-tag">Menú</span>
+        <h2 class="section-title">Servicios</h2>
+        <div class="services-grid">
+            <div class="service-card"><h3>Manicura permanente</h3><span class="service-price">12€</span></div>
+            <div class="service-card"><h3>Manicura + Acrílico</h3><span class="service-price">16€</span></div>
+            <div class="service-card"><h3>Relieves</h3><span class="service-price">2€</span></div>
+            <div class="service-card"><h3>Flor 3D</h3><span class="service-price">2€</span></div>
+            <div class="service-card"><h3>Diseños</h3><span class="service-price">3€</span></div>
+            <div class="service-card"><h3>Lifting de Pestañas</h3><span class="service-price">25€</span></div>
+            <div class="service-card"><h3>Depilación Cejas</h3><span class="service-price">8€</span></div>
+            <div class="service-card"><h3>Depilación Labio</h3><span class="service-price">5€</span></div>
+        </div>
+    </section>
+
+    <section id="horarios" style="background: #fff;">
+        <span class="section-tag">Disponibilidad</span>
+        <h2 class="section-title">Horarios Generales</h2>
+        <table class="schedule-table">
+            <tr><td>Lun - Jue</td><td style="text-align:right">10:00 - 19:30</td></tr>
+            <tr><td>Viernes</td><td style="text-align:right">10:00 - 18:30</td></tr>
+            <tr><td>Sáb - Dom</td><td style="text-align:right">10:00 - 14:00</td></tr>
+        </table>
+        <div style="text-align: center; margin-top: 25px;">
+            <p style="font-size: 0.75rem; color: #999;">¿Te ha surgido un imprevisto?</p>
+            <button onclick="openCancelModal()" style="background: none; border: none; color: var(--danger); text-decoration: underline; cursor: pointer; font-size: 0.8rem; font-weight: 600; font-family: inherit;">
+                Haz clic aquí para cancelar tu cita
+            </button>
+        </div>
+    </section>
+
+    <div class="modal-overlay" id="modalCita">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div class="progress-bar"><div id="progress"></div></div>
+            <form id="reservaWizard">
+                <div class="step active" id="step1">
+                    <h3>¿Quién eres?</h3>
+                    <input type="text" id="w_nombre" placeholder="Tu nombre completo" required>
+                    <select id="w_servicio" required>
+                        <option value="" disabled selected>Selecciona un servicio</option>
+                        <option value="1">Manicura permanente (12€)</option>
+                        <option value="2">Manicura + Acrílico (16€)</option>
+                        <option value="3">Relieves (2€)</option>
+                        <option value="4">Flor 3D (2€)</option>
+                        <option value="5">Diseños (3€)</option>
+                        <option value="6">LIFTING DE PESTAÑAS (25€)</option>
+                        <option value="7">DEPILACIÓN Cejas (8€)</option>
+                        <option value="8">DEPILACIÓN Labio (5€)</option>
+                    </select>
+                    <button type="button" class="btn-step" onclick="goStep(2)">Siguiente</button>
                 </div>
-                
-                <button type="button" onclick="validateStep1()">Siguiente</button>
-            </div>
-
-            <div class="step" id="step2">
-                <h3>¿Qué día?</h3>
-                <input type="date" id="w_fecha" required>
-                <button type="button" onclick="checkAvailability()">Ver horas disponibles</button>
-                <button type="button" class="btn-back" onclick="goStep(1)">Atrás</button>
-            </div>
-
-            <div class="step" id="step3">
-                <h3>Horas con tiempo suficiente</h3>
-                <p style="font-size:0.7rem; color:#666">Solo mostramos horas donde tenemos tiempo para todos tus servicios.</p>
-                <div id="w_time_grid" class="time-grid"></div>
-                <input type="hidden" id="w_hora_val">
-                <button type="button" class="btn-back" onclick="goStep(2)">Atrás</button>
-            </div>
-
-            <div class="step" id="step4">
-                <h3>Dirección en Burriana</h3>
-                <textarea id="w_notas" rows="3" placeholder="Calle, número, piso..." required></textarea>
-                <button type="submit" id="btnFinish">Confirmar Reserva</button>
-                <button type="button" class="btn-back" onclick="goStep(3)">Atrás</button>
-            </div>
-        </form>
+                <div class="step" id="step2">
+                    <h3>¿Qué día te va bien?</h3>
+                    <input type="date" id="w_fecha" required>
+                    <button type="button" class="btn-step" onclick="checkAvailability()">Ver horas libres</button>
+                    <button type="button" class="btn-back" onclick="goStep(1)">Atrás</button>
+                </div>
+                <div class="step" id="step3">
+                    <h3>Elige una hora</h3>
+                    <div id="w_time_grid" class="time-grid"></div>
+                    <input type="hidden" id="w_hora_val" required>
+                    <button type="button" class="btn-back" onclick="goStep(2)">Atrás</button>
+                </div>
+                <div class="step" id="step4">
+                    <h3>¿Dónde quedamos?</h3>
+                    <textarea id="w_notas" rows="3" placeholder="Tu dirección en Burriana..." required></textarea>
+                    <button type="submit" class="btn-step" id="btnFinish">Confirmar Reserva</button>
+                    <button type="button" class="btn-back" onclick="goStep(3)">Atrás</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
+
+    <div class="modal-overlay" id="modalCancelar">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeCancelModal()">&times;</span>
+            <div style="padding: 30px;">
+                <h3 style="font-family: 'Playfair Display', serif; margin-bottom: 10px;">Anular mi Cita</h3>
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 20px;">Introduce los datos exactos de tu reserva.</p>
+                <form id="formCancelar">
+                    <input type="text" id="c_nombre" placeholder="Nombre con el que reservaste" required>
+                    <input type="date" id="c_fecha" required>
+                    <select id="c_hora" required>
+                        <option value="" disabled selected>Selecciona la hora</option>
+                        <option>10:00</option><option>11:30</option><option>13:00</option>
+                        <option>14:30</option><option>16:00</option><option>17:30</option><option>19:00</option>
+                    </select>
+                    <button type="submit" class="btn-step" id="btnCancelSubmit" style="background: var(--danger);">Cancelar Cita</button>
+                </form>
+                <div id="cancelMessage" style="margin-top: 15px; font-size: 0.85rem; display: none; text-align: center; padding: 10px; border-radius: 5px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <a href="https://wa.me/34628302701" class="wa-float" target="_blank">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
 
 <script>
     const _supabase = supabase.createClient("https://sujrgipyxtgwkntjqnse.supabase.co", "sb_publishable_WKAUMKpxnf1T2ZwkuWkD8Q_jx-7lo8D");
 
-    // CONFIGURACIÓN DE SERVICIOS (Duración en minutos)
-    const SERVICIOS = [
-        { id: 1, nombre: "Manicura Permanente", precio: 12, duracion: 60 },
-        { id: 2, nombre: "Manicura + Acrílico", precio: 16, duracion: 90 },
-        { id: 3, nombre: "Relieves", precio: 2, duracion: 15 },
-        { id: 4, nombre: "Flor 3D", precio: 2, duracion: 15 },
-        { id: 5, nombre: "Diseños", precio: 3, duracion: 20 },
-        { id: 6, nombre: "Lifting de Pestañas", precio: 25, duracion: 60 },
-        { id: 7, nombre: "Depilación Cejas", precio: 8, duracion: 15 },
-        { id: 8, nombre: "Depilación Labio", precio: 5, duracion: 10 }
-    ];
+    // Fecha mínima hoy
+    document.getElementById('w_fecha').min = new Date().toISOString().split("T")[0];
 
-    // Cargar servicios en el HTML
-    const container = document.getElementById('servicesContainer');
-    SERVICIOS.forEach(s => {
-        container.innerHTML += `
-            <div class="service-item" onclick="toggleCheck(${s.id})">
-                <input type="checkbox" class="svc-check" value="${s.id}" data-precio="${s.precio}" data-duracion="${s.duracion}" id="svc-${s.id}">
-                <div class="service-info">
-                    <strong>${s.nombre}</strong>
-                    <span>${s.precio}€ - ${s.duracion} min</span>
-                </div>
-            </div>
-        `;
-    });
-
-    function toggleCheck(id) {
-        const cb = document.getElementById(`svc-${id}`);
-        cb.checked = !cb.checked;
-        updateSummary();
-    }
-
-    function updateSummary() {
-        let total = 0;
-        let tiempo = 0;
-        document.querySelectorAll('.svc-check:checked').forEach(cb => {
-            total += parseFloat(cb.dataset.precio);
-            tiempo += parseInt(cb.dataset.duracion);
-        });
-        document.getElementById('total_summary').innerText = `Total: ${total}€ | Duración aprox: ${tiempo} min`;
-    }
-
+    // MODALES
     function openModal() { document.getElementById('modalCita').style.display = 'flex'; goStep(1); }
-    function goStep(n) { 
+    function closeModal() { document.getElementById('modalCita').style.display = 'none'; }
+    function openCancelModal() { document.getElementById('modalCancelar').style.display = 'flex'; }
+    function closeCancelModal() { document.getElementById('modalCancelar').style.display = 'none'; document.getElementById('cancelMessage').style.display = 'none'; }
+    
+    function goStep(n) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step'+n).classList.add('active');
+        document.getElementById('progress').style.width = (n * 25) + "%";
     }
 
-    function validateStep1() {
-        if(!document.getElementById('w_nombre').value) return alert("Dinos tu nombre");
-        if(document.querySelectorAll('.svc-check:checked').length === 0) return alert("Selecciona al menos un servicio");
-        goStep(2);
-    }
-
+    // COMPROBAR DISPONIBILIDAD
     async function checkAvailability() {
-        const fecha = document.getElementById('w_fecha').value;
-        if(!fecha) return alert("Selecciona fecha");
-
-        // Calcular duración total seleccionada
-        let duracionTotalRequerida = 0;
-        document.querySelectorAll('.svc-check:checked').forEach(cb => duracionTotalRequerida += parseInt(cb.dataset.duracion));
-
-        goStep(3);
-        const grid = document.getElementById('w_time_grid');
-        grid.innerHTML = "Calculando...";
-
-        // 1. Obtener citas ocupadas de ese día
-        const { data: ocupadas } = await _supabase.from('citas').select('hora, nombre').eq('fecha', fecha).order('hora', { ascending: true });
+        const fechaSeleccionada = document.getElementById('w_fecha').value;
+        if(!fechaSeleccionada) return alert("Por favor, selecciona una fecha");
         
-        // 2. Definir slots según día (simplificado)
-        const diaSemana = new Date(fecha).getDay();
-        const slots = (diaSemana === 0 || diaSemana === 6) ? ["10:00", "11:30", "13:00"] : ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"];
+        const grid = document.getElementById('w_time_grid');
+        grid.innerHTML = "<p style='grid-column:1/-1; text-align:center;'>Cargando huecos...</p>";
+        
+        goStep(3);
+
+        const { data: ocupadas } = await _supabase.from('citas').select('hora').eq('fecha', fechaSeleccionada);
+        const listaOcupadas = ocupadas ? ocupadas.map(c => c.hora) : [];
+        
+        const ahora = new Date();
+        const hoyISO = ahora.toISOString().split('T')[0];
+
+        const partes = fechaSeleccionada.split('-');
+        const diaSemana = new Date(partes[0], partes[1] - 1, partes[2]).getDay(); 
+        const esFinde = (diaSemana === 0 || diaSemana === 6);
+        const slotsDefinidos = esFinde ? ["10:00", "11:30", "13:00"] : ["10:00", "11:30", "13:00", "14:30", "16:00", "17:30", "19:00"];
+
+        // Margen de 2 horas
+        const fechaConMargen = new Date();
+        fechaConMargen.setHours(fechaConMargen.getHours() + 2);
+        const horaLimiteStr = fechaConMargen.getHours().toString().padStart(2, '0') + ":" + fechaConMargen.getMinutes().toString().padStart(2, '0');
 
         grid.innerHTML = "";
 
-        slots.forEach(h => {
-            const horaInicio = timeToMins(h);
-            const horaFinPropuesta = horaInicio + duracionTotalRequerida;
-
-            // REGLA: ¿Choca este bloque con alguna cita existente?
-            let conflicto = false;
-            if(ocupadas) {
-                ocupadas.forEach(cita => {
-                    const citaInicio = timeToMins(cita.hora);
-                    // Suponemos una duración media de 60 min para citas existentes si no se guardó el fin
-                    const citaFin = citaInicio + 60; 
-
-                    // Si mi nueva cita empieza antes de que termine otra O termina después de que empiece la siguiente
-                    if (horaInicio < citaFin && horaFinPropuesta > citaInicio) {
-                        conflicto = true;
-                    }
-                });
-            }
-
+        slotsDefinidos.forEach(h => {
             const d = document.createElement('div');
-            d.className = 'time-slot' + (conflicto ? ' disabled' : '');
-            d.innerText = h;
-            if(!conflicto) {
+            d.className = 'time-slot';
+            const estaOcupada = listaOcupadas.includes(h);
+            const yaHaPasado = (fechaSeleccionada === hoyISO) && (h <= horaLimiteStr);
+
+            if(estaOcupada || yaHaPasado) {
+                d.classList.add('disabled');
+                d.innerHTML = h + (estaOcupada ? "<br><small>Ocupado</small>" : "<br><small>No disp.</small>");
+            } else {
+                d.innerText = h;
                 d.onclick = () => {
+                    document.querySelectorAll('.time-slot').forEach(el => { el.style.background = ""; el.style.color = ""; });
+                    d.style.background = "var(--primary)";
+                    d.style.color = "white";
                     document.getElementById('w_hora_val').value = h;
-                    goStep(4);
+                    setTimeout(() => goStep(4), 250);
                 };
             }
             grid.appendChild(d);
         });
     }
 
-    function timeToMins(time) {
-        const [h, m] = time.split(':').map(Number);
-        return h * 60 + m;
-    }
-
+    // SUBMIT RESERVA
     document.getElementById('reservaWizard').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnFinish');
+        const nombreVal = document.getElementById('w_nombre').value.trim();
+        const fechaVal = document.getElementById('w_fecha').value;
+        const horaVal = document.getElementById('w_hora_val').value;
+
+        if(!horaVal) return alert("Por favor, selecciona una hora");
+
+        btn.innerText = "Procesando..."; 
         btn.disabled = true;
 
-        const seleccionados = [];
-        document.querySelectorAll('.svc-check:checked').forEach(cb => {
-            const info = SERVICIOS.find(s => s.id == cb.value);
-            seleccionados.push(info.nombre);
-        });
+        // Validar una cita por día
+        const { data: existe } = await _supabase.from('citas').select('id').eq('nombre', nombreVal).eq('fecha', fechaVal);
+        if (existe && existe.length > 0) {
+            alert("Ya tienes una reserva para hoy.");
+            btn.innerText = "Confirmar Reserva"; btn.disabled = false;
+            return;
+        }
 
         const reserva = {
-            nombre: document.getElementById('w_nombre').value,
-            fecha: document.getElementById('w_fecha').value,
-            hora: document.getElementById('w_hora_val').value,
-            notas: `Servicios: ${seleccionados.join(', ')} | Dir: ${document.getElementById('w_notas').value}`
+            nombre: nombreVal,
+            servicio_id: parseInt(document.getElementById('w_servicio').value),
+            fecha: fechaVal,
+            hora: horaVal,
+            notas: document.getElementById('w_notas').value
         };
 
         const { error } = await _supabase.from('citas').insert([reserva]);
         if(!error) {
-            alert("¡Reserva confirmada!");
-            window.location.href = `https://wa.me/34628302701?text=Reserva: ${reserva.nombre} - ${reserva.fecha} a las ${reserva.hora}. Servicios: ${seleccionados.join(', ')}`;
+            const msj = `✨ *Nueva Cita Gloow* ✨\n\n*Nombre:* ${reserva.nombre}\n*Día:* ${reserva.fecha}\n*Hora:* ${reserva.hora}`;
+            window.location.href = `https://wa.me/34628302701?text=${encodeURIComponent(msj)}`;
         } else {
-            alert("Error al guardar");
-            btn.disabled = false;
+            alert("Error al guardar.");
+            btn.disabled = false; btn.innerText = "Confirmar Reserva";
         }
     });
-</script>
 
+    // CANCELACIÓN
+    document.getElementById('formCancelar').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnCancelSubmit');
+        const msg = document.getElementById('cancelMessage');
+        const nombre = document.getElementById('c_nombre').value.trim();
+        const fecha = document.getElementById('c_fecha').value;
+        const hora = document.getElementById('c_hora').value;
+
+        btn.innerText = "Buscando..."; btn.disabled = true;
+        const { error, count } = await _supabase.from('citas').delete({ count: 'exact' }).eq('nombre', nombre).eq('fecha', fecha).eq('hora', hora);
+
+        msg.style.display = "block";
+        if (error || count === 0) {
+            msg.style.background = "#fff3cd"; msg.innerText = "Cita no encontrada.";
+            btn.disabled = false; btn.innerText = "Cancelar Cita";
+        } else {
+            msg.style.background = "#d4edda"; msg.innerText = "Cita cancelada.";
+            setTimeout(() => {
+                if(confirm("¿Avisar por WhatsApp?")) window.location.href = `https://wa.me/34628302701?text=He cancelado mi cita del ${fecha}`;
+                else location.reload();
+            }, 1000);
+        }
+    });
+
+</script>
 </body>
 </html>
